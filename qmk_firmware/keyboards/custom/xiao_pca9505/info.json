@@ -1,0 +1,13 @@
+{
+    "keyboard_name": "Xiao RP2040 with PCA9505",
+    "url": "https://github.com/yourrepo/xiao_pca9505",
+    "maintainer": "yourgithubuser",
+    "maintainer_url": "https://github.com/yourgithubuser",
+    "supports": [
+        "anyswitch"
+    ],
+    "matrix": {
+        "rows": 42,
+        "cols": 1
+    }
+}
