@@ -1,0 +1,8 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"C1, C2",0603,2,0.1uF,
+J1,SolderWire-5,1,"Vcc, SDA, SCL, INT, GND",
+PCA9505,PCA9505,1,PCA9505DGG,
+"R1, R2",0603,2,1.6k,
+R3,0603,1,2k,
+"S0, S1, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S2, S20, S3, S4, S5, S6, S7, S8, S9",Kailh_Low_Profile,21,Keyswitch,
+U1,Seeed_XIAO_RP2040,1,MCU_Seeed_XIAO_RP2040,
