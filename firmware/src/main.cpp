@@ -1,5 +1,6 @@
-#include "split42.h"
+#include "Adafruit_TinyUSB.h"
 #include <Arduino.h>
+#include <split42.h>
 #include <stdint.h>
 #include <Wire.h>
 
@@ -12,14 +13,10 @@ KBHalf left(0x24,
             2,  4, 21, 18, 15, 13,
             1,  0, 22, 17, 11, 12,
                         5,  6,  7},
-        //    {KEY_TAB,      KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T,
-        //     KEY_ESC,      KEY_A, KEY_S, KEY_D, KEY_F, KEY_F,
-        //     KEY_LEFT_ALT, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B,
-        //         KEY_LEFT_SHIFT, KEY_LEFT_CTRL, KEY_LEFT_GUI}
-           {'t', 'q', 'w', 'e', 'r', 't',
-            'e', 'a', 's', 'd', 'f', 'g',
-            'a', 'z', 'x', 'c', 'v', 'b',
-                           's', '\n', ' '}
+           {HID_KEY_TAB,        HID_KEY_Q,  HID_KEY_W,  HID_KEY_E,  HID_KEY_R,  HID_KEY_T,
+            HID_KEY_ESC,        HID_KEY_A,  HID_KEY_S,  HID_KEY_D,  HID_KEY_F,  HID_KEY_F,
+            HID_KEY_LEFT_ALT,   HID_KEY_Z,  HID_KEY_X,  HID_KEY_C,  HID_KEY_V,  HID_KEY_B,
+                                  HID_KEY_LEFT_SHIFT, HID_KEY_LEFT_CTRL, HID_KEY_LEFT_GUI}
            );
 
 // KBHalf right(0x20,
@@ -31,14 +28,34 @@ KBHalf left(0x24,
 
 // clang-format on
 
-void setup() {
-    Serial.begin(115200); // debugging
+Adafruit_USBD_HID usb_hid;
 
-    Wire.begin(); // start i2c
+void setup() {
+    // setup serial
+    Serial.begin(115200);
+
+    // set up I2C
+    Wire.begin();
     Wire.setClock(400000);
 
-    pinMode(int_pin, INPUT); // setup interrupt pin
+    // setup interrupt
+    pinMode(int_pin, INPUT);
 
+    // setup HID
+    if (!TinyUSBDevice.isInitialized()) { TinyUSBDevice.begin(0); }
+
+    uint8_t const desc[] = {TUD_HID_REPORT_DESC_KEYBOARD()};
+
+    usb_hid.setBootProtocol(HID_ITF_PROTOCOL_KEYBOARD);
+    usb_hid.setPollInterval(1); // ms
+    usb_hid.setReportDescriptor(desc, sizeof(desc));
+    usb_hid.setStringDescriptor("Split42 Keyboard");
+
+    usb_hid.begin();
+    while (!TinyUSBDevice.mounted())
+        ;
+
+    // setup keyboard
     left.init();
     // right.init();
 }
