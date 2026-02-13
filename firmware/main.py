@@ -3,7 +3,7 @@ import board
 import busio
 from digitalio import DigitalInOut
 from kmk.kmk_keyboard import KMKKeyboard
-from kmk.keys import KC
+from kmk.keys import KC, Key
 from kmk.modules.layers import Layers
 from kmk.extensions.rgb import RGB
 from kmk.extensions.media_keys import MediaKeys
@@ -35,9 +35,19 @@ keyboard = KMKKeyboard()
 keyboard.modules.append(Layers())
 keyboard.modules.append(MediaKeys())
 
-L1SPC = KC.LT(1, KC.SPACE, tap_time=200)
-L2BSPC = KC.LT(2, KC.BSPC, tap_time=200)
-L1ENT = KC.LT(1, KC.ENT, tap_time=200)
+BASE = 0
+LOWER = 1
+UPPER = 2
+NUMPAD = 3
+GAMING = 4
+CHAT = 5
+
+_______ = KC.TRNS
+XXXXXXX = KC.NO
+
+L_SPC = KC.LT(LOWER, KC.SPACE, tap_time=200)
+U_BSPC = KC.LT(UPPER, KC.BSPC, tap_time=200)
+N_ENT = KC.LT(NUMPAD, KC.ENT, tap_time=200)
 
 WS1 = KC.LGUI(KC.N1)
 WS2 = KC.LGUI(KC.N2)
@@ -48,48 +58,59 @@ WS6 = KC.LGUI(KC.N6)
 WS7 = KC.LGUI(KC.N7)
 WS8 = KC.LGUI(KC.N8)
 
+def chat_toggle(key, keyboard, *args):
+    keyboard.tap_key(KC.ENT)
+
+    if GAMING in keyboard.active_layers:
+        keyboard.active_layers = [BASE]
+        keyboard.active_layers.insert(0, CHAT)
+    elif CHAT in keyboard.active_layers:
+        keyboard.active_layers = [GAMING]
+
+CHAT_T = Key(on_press=None, on_release=chat_toggle)
+
 keyboard.keymap = [
     # base
     [
         KC.TAB,  KC.Q,    KC.W,    KC.E,    KC.R,    KC.T,       KC.Y,    KC.U,    KC.I,    KC.O,    KC.P,    KC.MINS,
         KC.ESC,  KC.A,    KC.S,    KC.D,    KC.F,    KC.G,       KC.H,    KC.J,    KC.K,    KC.L,    KC.SCLN, KC.EQL,
         KC.LALT, KC.Z,    KC.X,    KC.C,    KC.V,    KC.B,       KC.N,    KC.M,    KC.COMM, KC.DOT,  KC.SLSH, KC.DEL,
-                                   KC.LCTL, KC.LSFT, KC.LGUI,    L2BSPC,  L1SPC,   KC.ENT
-    ],
-    # upper
-    [
-        KC.GRV,  KC.N1,   KC.N2,   KC.N3,   KC.N4,   KC.N5,      KC.N6,   KC.N7,   KC.N8,   KC.N9,   KC.N0,   KC.NO,
-        KC.NO,   WS1,     WS2,     WS3,     WS4,     KC.NO,      KC.LEFT, KC.DOWN, KC.UP,   KC.RGHT, KC.QUOT, KC.NO,
-        KC.TRNS, KC.FD(0),KC.FD(3),KC.FD(4),KC.FD(5),KC.NO,      KC.NO,   KC.NO,   KC.LBRC, KC.RBRC, KC.BSLS, KC.NO,
-                                   KC.TRNS, KC.TRNS, KC.TRNS,    KC.NO,   KC.NO,   KC.NO
+                                   KC.LCTL, KC.LSFT, N_ENT,      U_BSPC,  L_SPC,   KC.LGUI
     ],
     # lower
     [
+        KC.GRV,  KC.N1,   KC.N2,   KC.N3,   KC.N4,   KC.N5,      KC.N6,   KC.N7,   KC.N8,   KC.N9,   KC.N0,   XXXXXXX,
+        KC.NO,   WS1,     WS2,     WS3,     WS4,     XXXXXXX,    KC.LEFT, KC.DOWN, KC.UP,   KC.RGHT, KC.QUOT, XXXXXXX,
+        _______, KC.FD(0),KC.FD(3),XXXXXXX, XXXXXXX ,XXXXXXX,    XXXXXXX, XXXXXXX, KC.LBRC, KC.RBRC, KC.BSLS, XXXXXXX,
+                                   _______, _______, _______,    XXXXXXX, XXXXXXX, XXXXXXX,
+    ],
+    # upper
+    [
         KC.NO,   KC.F1,   KC.F2,   KC.F3,   KC.F4,   KC.F5,      KC.F6,   KC.F7,   KC.F8,   KC.F9,   KC.F10,  KC.F11,
-        KC.CAPS, WS5,     WS6,     WS7,     WS8,     KC.NO,      KC.HOME, KC.PGDN, KC.PGUP, KC.END,  KC.NO,   KC.F12,
-        KC.TRNS, KC.NO,   KC.NO,   KC.NO,   KC.NO,   KC.NO,      KC.MRWD, KC.VOLD, KC.VOLU, KC.MFFD, KC.EJCT, KC.NO,
-                                   KC.TRNS, KC.TRNS, KC.TRNS,    KC.NO,   KC.NO,   KC.NO
+        KC.CAPS, WS5,     WS6,     WS7,     WS8,     XXXXXXX,    KC.HOME, KC.PGDN, KC.PGUP, KC.END,  KC.NO,   KC.F12,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    KC.MRWD, KC.VOLD, KC.VOLU, KC.MFFD, KC.EJCT, XXXXXXX,
+                                   _______, _______, _______,    XXXXXXX, XXXXXXX, XXXXXXX
+    ],
+    # numpad
+    [
+        KC.TAB,  KC.Q,    KC.N7,   KC.N8,   KC.N9,   KC.MINS,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, 
+        KC.ESC,  KC.A,    KC.N4,   KC.N5,   KC.N6,   KC.PLUS,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, 
+        KC.DEL,  KC.N0,   KC.N1,   KC.N2,   KC.N3,   KC.DOT,     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, 
+                                   XXXXXXX, XXXXXXX, XXXXXXX,    KC.BSPC, KC.SPC,  KC.LGUI
     ],
     # gaming
     [
-        KC.TAB,  KC.N1,   KC.N2,   KC.N3,   KC.N4,   KC.T,       KC.Y,    KC.U,    KC.I ,   KC.O,    KC.P,    KC.F7,
-        KC.ESC,  KC.LSFT, KC.A,    KC.W,    KC.D,    KC.R,       KC.H,    KC.J,    KC.K,    KC.L,    KC.F5,   KC.F6,
-        KC.Q,    KC.Z,    KC.X,    KC.S,    KC.V,    KC.B,       KC.N,    KC.M,    KC.F1,   KC.F2,   KC.F3,   KC.F4,
-                                   KC.LCTL, KC.SPC,  KC.E,       KC.NO,   KC.FD(0),KC.NO
+        KC.TAB,  KC.N1,   KC.N2,   KC.N3,   KC.N4,   KC.T,       KC.Y,    KC.U,    KC.I ,   KC.O,    KC.P,    KC.F1,
+        KC.ESC,  KC.LSFT, KC.A,    KC.W,    KC.D,    KC.R,       KC.H,    KC.J,    KC.K,    KC.L,    KC.F4,   KC.F2,
+        KC.Q,    KC.Z,    KC.X,    KC.S,    KC.V,    KC.B,       KC.N,    KC.M,    KC.F,    KC.G,    KC.F5,   KC.F3,
+                                   KC.LCTL, KC.SPC,  KC.E,       XXXXXXX, KC.FD(0),CHAT_T
     ],
-    # CAD
+    # chat
     [
-        KC.TAB,  KC.Q,    KC.W,    KC.E,    KC.R,    KC.T,       KC.Y,    KC.U,    KC.I,    KC.O,    KC.P,    KC.MINS,
-        KC.ESC,  KC.A,    KC.S,    KC.D,    KC.F,    KC.G,       KC.H,    KC.J,    KC.K,    KC.L,    KC.SCLN, KC.EQL,
-        KC.DEL,  KC.Z,    KC.X,    KC.C,    KC.V,    KC.B,       KC.N,    KC.M,    KC.COMM, KC.DOT,  KC.SLSH, KC.DEL,
-                                   KC.LCTL, KC.LSFT, L1ENT,      L2BSPC,  L1SPC,   KC.LGUI
-    ],
-    # colemak dh
-    [
-        KC.TAB,  KC.Q,    KC.W,    KC.F,    KC.P,    KC.B,       KC.J,    KC.L,    KC.U,    KC.Y,    KC.SCLN, KC.MINS,
-        KC.ESC,  KC.A,    KC.R,    KC.S,    KC.T,    KC.G,       KC.M,    KC.N,    KC.E,    KC.I,    KC.O,    KC.EQL,
-        KC.LALT, KC.Z,    KC.X,    KC.C,    KC.D,    KC.V,       KC.K,    KC.H,    KC.COMM, KC.DOT,  KC.SLSH, KC.DEL,
-                                   KC.LCTL, KC.LSFT, KC.LGUI,    L2BSPC,  L1SPC,   KC.ENT
+        _______, _______, _______, _______, _______, _______,    _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______,    _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______,    _______, _______, _______, _______, _______, _______,
+                                   _______, _______, CHAT_T,     _______, _______, _______
     ]
 ]
 
